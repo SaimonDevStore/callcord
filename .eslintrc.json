@@ -1,0 +1,7 @@
+{
+  "extends": ["next/core-web-vitals"],
+  "rules": {
+    // Relaxe regras que comumente quebram em build de CI
+    "@next/next/no-img-element": "off"
+  }
+}

@@ -1,0 +1,404 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider      = "postgresql"
+  url           = env("DATABASE_URL")
+  relationMode  = "prisma"
+}
+
+model Profile {
+  id        String  @id @default(uuid())
+  userId    String  @unique
+  name      String
+  imageUrl  String  @db.Text
+  bannerUrl String? @db.Text
+  email     String  @db.Text
+  bio       String? @db.Text
+  isNitro   Boolean @default(false)
+  nitroExpiresAt DateTime?
+  customNickname String?
+  nitroPlan NitroPlan?
+  
+
+  servers   Server[]
+  members   Member[]
+  channels  Channel[]
+  friendships Friendship[] @relation("UserFriendships")
+  friendsOf   Friendship[] @relation("FriendsOfUser")
+  
+  // Relações de recompensas
+  rewardProgress RewardProgress?
+  rewardDays     RewardDay[]
+  rewardSessions RewardSession[]
+  rewardPayoutRequests RewardPayoutRequest[]
+
+  // Reações e badges / enquetes
+  reactions   Reaction[]
+  profileBadges ProfileBadge[]
+  pollVotes   PollVote[]
+  reports     Report[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum NitroPlan {
+  FLUX
+  NEBULA
+  QUANTUM
+}
+
+model Server {
+  id          String    @id @default(uuid())
+  name        String
+  imageUrl    String    @db.Text
+  inviteCode  String    @unique
+  isVerified  Boolean   @default(false)
+  bannerUrl   String?   @db.Text
+  requireRules Boolean  @default(false)
+  rulesText   String?   @db.Text
+  requireTwoStep Boolean @default(false)
+
+  profileId   String
+  profile     Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  members     Member[]
+  channels    Channel[]
+  categories  ChannelCategory[]
+  events      ServerEvent[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([profileId])
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MODERATOR
+  MEMBER
+  VIP
+  FRIEND
+  GUEST
+}
+
+model Member {
+  id                      String          @id @default(uuid())
+  role                    MemberRole      @default(GUEST)
+  customRole              String?         // Cargo personalizado
+  roleColor               String?         // Cor do cargo (hex)
+
+  profileId               String
+  profile                 Profile         @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  serverId                String
+  server                  Server          @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  messages                Message[]
+  directMessages          DirectMessage[]
+
+  conversationsInitiated  Conversation[]  @relation("MemberOne")
+  conversationsReceived   Conversation[]  @relation("MemberTwo")
+
+  acceptedRulesAt         DateTime?
+  twoStepVerifiedAt       DateTime?
+  xp                      Int             @default(0)
+  level                   Int             @default(1)
+  lastMessageAt           DateTime?
+
+  createdAt               DateTime        @default(now())
+  updatedAt               DateTime        @updatedAt
+
+  @@index([profileId])
+  @@index([serverId])
+}
+
+enum ChannelType {
+  TEXT
+  AUDIO
+  VIDEO
+}
+
+model Channel {
+  id        String      @id @default(uuid())
+  name      String
+  type      ChannelType @default(TEXT)
+
+  profileId String
+  profile   Profile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  serverId  String
+  server    Server      @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  categoryId String?
+  category   ChannelCategory? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  messages  Message[]
+  threads   Thread[]
+  polls     Poll[]
+
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([profileId])
+  @@index([serverId])
+  @@index([categoryId])
+}
+
+model ChannelCategory {
+  id        String  @id @default(uuid())
+  name      String
+  position  Int     @default(0)
+  serverId  String
+  server    Server  @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  channels  Channel[]
+}
+
+model Message {
+  id        String    @id @default(uuid())
+  content   String    @db.Text
+
+  fileUrl   String?   @db.Text
+
+  memberId  String
+  member    Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  channelId String
+  channel   Channel   @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  deleted   Boolean   @default(false)
+  pinned    Boolean   @default(false)
+  threadId  String?
+  thread    Thread?   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  reactions Reaction[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([memberId])
+  @@index([channelId])
+}
+
+model Reaction {
+  id         String   @id @default(uuid())
+  emoji      String
+  messageId  String
+  message    Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  profileId  String
+  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([messageId, profileId, emoji])
+  @@index([messageId])
+}
+
+model Thread {
+  id            String   @id @default(uuid())
+  channelId     String
+  channel       Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  rootMessageId String
+  messages      Message[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Conversation {
+  id              String  @id @default(uuid())
+
+  memberOneId     String
+  memberOne       Member  @relation("MemberOne", fields: [memberOneId], references: [id], onDelete: Cascade)
+
+  memberTwoId     String
+  memberTwo       Member  @relation("MemberTwo", fields: [memberTwoId], references: [id], onDelete: Cascade)
+
+  directMessages  DirectMessage[]
+
+  @@index([memberTwoId])
+
+  @@unique([memberOneId, memberTwoId])
+}
+
+model DirectMessage {
+  id              String        @id @default(uuid())
+  content         String        @db.Text
+  fileUrl         String?       @db.Text
+
+  memberId        String
+  member          Member        @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  conversationId  String
+  conversation    Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  deleted         Boolean       @default(false)
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([memberId])
+  @@index([conversationId])
+}
+
+model Friendship {
+  id        String   @id @default(uuid())
+  
+  profileId String
+  profile   Profile  @relation("UserFriendships", fields: [profileId], references: [id], onDelete: Cascade)
+  
+  friendId  String
+  friend    Profile  @relation("FriendsOfUser", fields: [friendId], references: [id], onDelete: Cascade)
+  
+  status    FriendshipStatus @default(PENDING)
+  requestedById String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([profileId, friendId])
+  @@index([profileId])
+  @@index([friendId])
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+model RewardProgress {
+  id                 String   @id @default(uuid())
+  profileId          String   @unique
+  profile            Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  startedAt          DateTime @default(now())
+  validDays          Int      @default(0)
+  lastQualifiedDate  DateTime?
+  availableCents     Int      @default(0)
+  totalEarnedCents   Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model RewardDay {
+  id         String   @id @default(uuid())
+  profileId  String
+  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  date       DateTime
+  seconds    Int      @default(0)
+  isValid    Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  @@index([profileId, date])
+}
+
+model RewardSession {
+  id         String   @id @default(uuid())
+  profileId  String
+  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  roomId     String
+  startedAt  DateTime @default(now())
+  endedAt    DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  @@index([profileId, startedAt])
+}
+
+enum PayoutStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model RewardPayoutRequest {
+  id          String       @id @default(uuid())
+  profileId   String
+  profile     Profile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  amountCents Int
+  pixKey      String
+  status      PayoutStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+// Engagement
+model ServerEvent {
+  id        String   @id @default(uuid())
+  serverId  String
+  server    Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  title     String
+  description String?
+  startsAt  DateTime
+  endsAt    DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Badge {
+  id        String  @id @default(uuid())
+  code      String  @unique
+  label     String
+  holders   ProfileBadge[]
+}
+
+model ProfileBadge {
+  id        String  @id @default(uuid())
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  badgeId   String
+  badge     Badge   @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  serverId  String?
+  createdAt DateTime @default(now())
+  @@unique([profileId, badgeId, serverId])
+}
+
+model Poll {
+  id        String   @id @default(uuid())
+  channelId String
+  channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  question  String
+  createdBy String
+  createdAt DateTime @default(now())
+  options   PollOption[]
+}
+
+model PollOption {
+  id      String  @id @default(uuid())
+  pollId  String
+  poll    Poll    @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  text    String
+  votes   PollVote[]
+}
+
+model PollVote {
+  id         String  @id @default(uuid())
+  optionId   String
+  option     PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  profileId  String
+  profile    Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  @@unique([optionId, profileId])
+}
+
+model ModerationLog {
+  id        String   @id @default(uuid())
+  serverId  String
+  actorId   String
+  action    String
+  targetId  String?
+  meta      String?  @db.Text
+  createdAt DateTime @default(now())
+}
+
+model Report {
+  id        String   @id @default(uuid())
+  serverId  String
+  reporterId String
+  messageId String?
+  targetProfileId String?
+  reason    String  @db.Text
+  createdAt DateTime @default(now())
+  status    String  @default("OPEN")
+  reporter  Profile @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+}

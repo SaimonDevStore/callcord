@@ -1,0 +1,10 @@
+[33mc552ed1[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m FIX: corrigir estrutura de rotas - remover /main e redirecionar DIRETAMENTE para servidor
+[33mcfb16f6[m FEAT: abrir Callcord DIRETAMENTE em https://callcord.vercel.app/ - SEM redirecionamentos
+[33m7a1a525[m FIX: corrigir estrutura de rotas - remover /main e redirecionar DIRETAMENTE para servidor
+[33m84d19b3[m FIX: corrigir vercel.json - redirecionar para /main em vez de /(main)
+[33mf77a223[m REMOVER: eliminar pagina de loading - abrir Callcord DIRETAMENTE sem redirecionamentos
+[33mdf40355[m FIX FINAL: resolver erro 404 na rota /main - criar page.tsx e corrigir redirecionamentos
+[33m2ed2c13[m FIX: criar page.tsx na pasta main para resolver erro 404 - redirecionamento funcionando agora
+[33m1f51b05[m FIX: corrigir TODOS os redirecionamentos incorretos - usar /main/servers/ em vez de /servers/
+[33m1701a54[m FIX: renomear (main) para main para resolver erro 404 no Vercel - adicionar vercel.json
+[33m3d2d34d[m REMOVER: eliminar completamente funcionalidade de abertura do Callcord - limpar interferencias no link oficial
