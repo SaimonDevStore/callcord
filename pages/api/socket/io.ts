@@ -22,13 +22,17 @@ const ioHandler = (req: NextApiRequest, res: NextApiResponseServerIO) => {
         origin: [
           "https://callcord.vercel.app",
           "https://callcordg.vercel.app",
-          "http://localhost:3000"
+          "http://localhost:3000",
+          "http://localhost:3001",
+          "http://localhost:3002"
         ],
         methods: ["GET", "POST", "OPTIONS"],
         credentials: true,
         allowedHeaders: ["Content-Type", "Authorization"],
       },
       transports: ["websocket", "polling"],
+      timeout: 20000,
+      forceNew: true,
     });
 
     res.socket.server.io = io;

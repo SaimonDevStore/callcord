@@ -32,7 +32,7 @@ export const NavigationSidebar = async () => {
     orderBy: { createdAt: "asc" },
   });
 
-  const OFFICIAL_INVITE = "5f1b2a06-1850-4d85-93c9-27a7d01c5fcd";
+  const OFFICIAL_INVITE = "callcord-oficial";
   const officialServer = await db.server.findFirst({ where: { inviteCode: OFFICIAL_INVITE } });
   const serversWithFlag = servers.map((s) => ({
     ...s,

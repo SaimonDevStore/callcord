@@ -165,7 +165,7 @@ export const ServerSidebar = async ({ serverId }: ServerSidebarProps) => {
             </div>
           )}
           {/* Botão Recompensas - apenas no servidor oficial por inviteCode */}
-          {server.inviteCode === "5f1b2a06-1850-4d85-93c9-27a7d01c5fcd" && (
+          {server.inviteCode === "callcord-oficial" && (
             <div className="mb-3">
               <RewardsButton />
             </div>

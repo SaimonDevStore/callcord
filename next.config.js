@@ -4,7 +4,7 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: [],
     serverActions: {
-      allowedOrigins: ['localhost:3000', 'callcord.vercel.app', '*.onrender.com', '*.railway.app'],
+      allowedOrigins: ['localhost:3000', 'localhost:3001', 'localhost:3002', 'callcord.vercel.app', '*.onrender.com', '*.railway.app'],
     },
   },
   typescript: {
@@ -12,6 +12,36 @@ const nextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: false,
+  },
+  images: {
+    domains: [
+      'utfs.io',
+      'img.clerk.com',
+      'images.clerk.dev',
+      'uploadthing.com',
+      'lh3.googleusercontent.com',
+      'avatars.githubusercontent.com'
+    ],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'utfs.io',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.clerk.dev',
+        port: '',
+        pathname: '/**',
+      },
+    ],
   },
 };
 
