@@ -43,6 +43,17 @@ const nextConfig = {
       },
     ],
   },
+  // Forçar serialização estrita
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals = config.externals || [];
+      config.externals.push({
+        'socket.io': 'commonjs socket.io',
+        'socket.io-client': 'commonjs socket.io-client',
+      });
+    }
+    return config;
+  },
 };
 
 module.exports = nextConfig;

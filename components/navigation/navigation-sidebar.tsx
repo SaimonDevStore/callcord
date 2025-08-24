@@ -11,6 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { currentProfile } from "@/lib/current-profile";
 import { db } from "@/lib/db";
 import { OwnerMenu } from "@/components/owner-menu";
+import { serializePrismaArray } from "@/lib/serialization-fix";
 
 import { NavigationAction } from "./navigation-action";
 import { NavigationItem } from "./navigation-item";
@@ -34,9 +35,14 @@ export const NavigationSidebar = async () => {
 
   const OFFICIAL_INVITE = "callcord-oficial";
   const officialServer = await db.server.findFirst({ where: { inviteCode: OFFICIAL_INVITE } });
-  const serversWithFlag = servers.map((s) => ({
+  
+  // Serializar objetos do Prisma para evitar erros de serialização
+  const serializedServers = serializePrismaArray(servers);
+  const serializedOfficialServer = officialServer ? serializePrismaArray([officialServer])[0] : null;
+  
+  const serversWithFlag = serializedServers.map((s: any) => ({
     ...s,
-    isOfficial: !!officialServer && s.id === officialServer.id,
+    isOfficial: !!serializedOfficialServer && s.id === serializedOfficialServer.id,
   }));
 
   return (
