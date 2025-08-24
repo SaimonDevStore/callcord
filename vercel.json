@@ -12,15 +12,30 @@
       "dest": "/api/socket/$1"
     },
     {
-      "src": "/(.*)",
-      "dest": "/$1"
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
     }
   ],
   "env": {
     "NODE_ENV": "production"
   },
   "functions": {
-    "app/api/socket/io.ts": {
+    "pages/api/socket/io.ts": {
+      "maxDuration": 30
+    },
+    "pages/api/socket/calls/invite.ts": {
+      "maxDuration": 30
+    },
+    "pages/api/socket/messages/index.ts": {
+      "maxDuration": 30
+    },
+    "pages/api/socket/messages/[messageId].ts": {
+      "maxDuration": 30
+    },
+    "pages/api/socket/direct-messages/index.ts": {
+      "maxDuration": 30
+    },
+    "pages/api/socket/direct-messages/[directMessageId].ts": {
       "maxDuration": 30
     }
   }
