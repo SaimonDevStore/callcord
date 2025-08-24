@@ -8,12 +8,16 @@ export default authMiddleware({
     "/api/socket/(.*)",
     "/api/rewards/cron",
     "/api/webhooks(.*)",
-    "/api/livekit/(.*)"
+    "/api/livekit/(.*)",
+    "/api/socket/calls/(.*)",
+    "/api/socket/messages/(.*)",
+    "/api/socket/direct-messages/(.*)",
   ],
   ignoredRoutes: [
     "/api/socket/(.*)",
-    "/api/livekit/(.*)"
-  ]
+    "/api/livekit/(.*)",
+    "/api/rewards/(.*)",
+  ],
 });
 
 export const config = {

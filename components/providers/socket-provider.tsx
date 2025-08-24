@@ -35,8 +35,6 @@ export const SocketProvider = ({ children }: PropsWithChildren) => {
         path: "/api/socket/io",
         addTrailingSlash: false,
         transports: ["websocket", "polling"],
-        timeout: 20000,
-        forceNew: true,
       },
     );
 

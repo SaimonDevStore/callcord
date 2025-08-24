@@ -31,8 +31,6 @@ const ioHandler = (req: NextApiRequest, res: NextApiResponseServerIO) => {
         allowedHeaders: ["Content-Type", "Authorization"],
       },
       transports: ["websocket", "polling"],
-      timeout: 20000,
-      forceNew: true,
     });
 
     res.socket.server.io = io;
